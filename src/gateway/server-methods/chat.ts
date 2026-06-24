@@ -3681,6 +3681,7 @@ export const chatHandlers: GatewayRequestHandlers = {
         InputProvenance: systemInputProvenance,
         SessionKey: sessionKey,
         AgentId: agentId,
+        CallerSessionId: backingSessionId,
         Provider: INTERNAL_MESSAGE_CHANNEL,
         Surface: INTERNAL_MESSAGE_CHANNEL,
         OriginatingChannel: originatingChannel,

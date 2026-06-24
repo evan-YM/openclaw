@@ -507,7 +507,22 @@ async function initSessionStateAttempt(
       mainKey,
       storePath,
     }));
+  // Caller-verified session: when a caller (e.g. chat.send) has already loaded
+  // and validated the session entry and passes its sessionId via
+  // ctx.CallerSessionId, trust that verification and skip freshness evaluation.
+  // The sessionId MUST match the store entry to prevent spoofing.
+  // Explicit /new and /reset (isNewSession) always take precedence.
+  // This closes the gap where chat.history sees the session (direct disk read
+  // without freshness check) but chat.send loses it (initSessionState
+  // independently evaluates freshness and mints a new sessionId).
+  const callerVerifiedSession =
+    !isNewSession &&
+    typeof ctx.CallerSessionId === "string" &&
+    ctx.CallerSessionId.length > 0 &&
+    canReuseExistingEntry &&
+    entry?.sessionId === ctx.CallerSessionId;
   const freshEntry =
+    callerVerifiedSession ||
     (isSystemEvent && canReuseExistingEntry) ||
     (((reconnectResumeRequested && canReuseExistingEntry) ||
       (entryFreshness?.fresh ?? false) ||
